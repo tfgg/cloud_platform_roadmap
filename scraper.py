@@ -5,6 +5,7 @@
 import lxml.html
 import requests
 import scraperwiki
+import sqlite3
 from datetime import datetime
 
 #
@@ -57,7 +58,10 @@ for section, url in urls.items():
         
         now = datetime.now()
         
-        exists = scraperwiki.sqlite.select("* from data where title=?", [title])
+        try:
+            exists = scraperwiki.sqlite.select("* from data where title=?", [title])
+        except sqlite3.OperationalError:
+            exists = []
 
         if len(exists) > 0:
             doc = exists[0]
