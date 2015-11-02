@@ -44,7 +44,7 @@ urls = {
     'cancelled': 'http://www.microsoft.com/en-us/server-cloud/roadmap/cancelled.aspx',
 }
 
-for section, url in urls.items():
+for state, url in urls.items():
     print
     print url
 
@@ -88,16 +88,22 @@ for section, url in urls.items():
             }
 
             for section2 in urls.keys():
-                doc[section2] = None
+                doc[state] = None
+
+        del doc['Cloudinfrastructure']
+        del doc['Enterprisemobility']
+        del doc['Datamanagementandanalytics']
+        del doc['Applicationdevelopment']
+        del doc['InternetofThings']
 
         doc['section'] = section
         doc['products'] = ", ".join(thing_products)
         
         scraperwiki.sqlite.save(unique_keys=['title'], data=doc)
 
-        if section not in doc or doc[section] is None:
+        if state not in doc or doc[state] is None:
             print "Updating" 
-            doc[section] = now
+            doc[state] = now
 
             scraperwiki.sqlite.save(unique_keys=['title'], data=doc)
         else:
