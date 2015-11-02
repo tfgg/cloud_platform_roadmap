@@ -6,6 +6,7 @@ import lxml.html
 import requests
 import scraperwiki
 import sqlite3
+import json
 from datetime import datetime
 
 #
@@ -28,6 +29,10 @@ from datetime import datetime
 # called "data.sqlite" in the current working directory which has at least a table
 # called "data".
 
+products = [x['label'] for x in json.load(open('products.json'))['products']]
+
+print products
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.71 Safari/537.36',
 }
@@ -47,10 +52,22 @@ for section, url in urls.items():
 
     tree = lxml.html.fromstring(resp.text)
 
-    titles = [x.text.strip() for x in tree.xpath('//section[@id="stbTabPanel-Cloudinfrastructure"]//h5[contains(@class, "accordionHeader")]')]
-    texts = [x.text_content().strip() for x in tree.xpath('//section[@id="stbTabPanel-Cloudinfrastructure"]//div[contains(@class, "accordionLeftSection")]')]
+    titles = [x for x in tree.xpath('//section//h5[contains(@class, "accordionHeader")]')]
+    texts = [x for x in tree.xpath('//section//div[contains(@class, "accordionLeftSection")]')]
 
-    for title, text in zip(titles, texts):
+    for title_e, text_e in zip(titles, texts):
+        section = title_e.getparent().getparent().getparent().attrib['id'].split('-')[1]
+
+        title = title_e.text.strip()
+        text = text_e.text_content().strip()
+
+        thing_products = []
+        for product in products:
+            if product in title_e.attrib['class']:
+                thing_products.append(product)
+
+        print thing_products
+
         if title == 'No items available':
             continue
 
@@ -72,6 +89,11 @@ for section, url in urls.items():
 
             for section2 in urls.keys():
                 doc[section2] = None
+
+        doc['section'] = section
+        doc['products'] = ", ".join(thing_products)
+        
+        scraperwiki.sqlite.save(unique_keys=['title'], data=doc)
 
         if section not in doc or doc[section] is None:
             print "Updating" 
