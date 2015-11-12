@@ -90,12 +90,6 @@ for state, url in urls.items():
             for section2 in urls.keys():
                 doc[state] = None
 
-        del doc['Cloudinfrastructure']
-        del doc['Enterprisemobility']
-        del doc['Datamanagementandanalytics']
-        del doc['Applicationdevelopment']
-        del doc['InternetofThings']
-
         doc['section'] = section
         doc['products'] = ", ".join(thing_products)
         
